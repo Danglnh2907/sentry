@@ -3,6 +3,7 @@ package main
 import (
 	//Import standard library
 	"fmt"
+	"log"
 	"net/http"
 
 	//Import standard package
@@ -10,16 +11,7 @@ import (
 	"sentry/get"
 	"sentry/post"
 	"sentry/put"
-	"sentry/utility"
 )
-
-type Transaction struct {
-	Name        string  `json:"name"`
-	Descripiton string  `json:"description"`
-	Category    string  `json:"category"`
-	Date        string  `json:"date"`
-	Cost        float64 `json:"cost"`
-}
 
 /*
 var transactions []Transaction = make([]Transaction, 0)
@@ -84,10 +76,11 @@ func main() {
 
 	//Run server at port 8080
 	fmt.Println("Sentry running at http://localhost:8080")
-
 	err := http.ListenAndServe("localhost:8080", mux)
-
-	//Sending error to terminal
-	utility.HandleInternalError(err)
+	if err != nil {
+		var w http.ResponseWriter
+		http.Error(w, "Server error", http.StatusInternalServerError)
+		log.Fatal(err)
+	}
 
 }
