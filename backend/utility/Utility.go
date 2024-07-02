@@ -9,13 +9,13 @@ import (
 	"os"
 
 	//Import user's defined package
-	_ "sentry/dataStructure"
+	_ "sentry/dataModel"
 )
 
 /*Error handling*/
 func LogError(err error, message string, isCritical bool) {
 	log.Println(message)
-	log.Printf("Error at %e\n", err)
+	log.Printf("Error: %s\n", err)
 
 	//If error is a critical one, end the server
 	if isCritical {

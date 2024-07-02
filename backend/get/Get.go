@@ -2,30 +2,28 @@ package get
 
 import (
 	"encoding/json"
-	_ "encoding/json"
 	_ "fmt"
 	"net/http"
-	"sentry/dataStructure"
+	"sentry/dataModel"
 	"sentry/utility"
-	_ "sentry/utility"
 )
 
 func HandleGetProfile(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func HandleGetTransactions(w http.ResponseWriter, r *http.Request) {
-	//Parse data to JSON
-	data, err := json.MarshalIndent(dataStructure.Transactions, "", " ")
+func HandleGetUsername(w http.ResponseWriter, r *http.Request) {
+	usernames := make([]string, 0)
+
+	for _, val := range dataModel.Users {
+		usernames = append(usernames, val.Username)
+	}
+
+	data, err := json.MarshalIndent(usernames, "", " ")
 	if err != nil {
 		utility.LogError(err, "Error parsing data to json", false)
-		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(data)
-}
-
-func HandleGetReport(w http.ResponseWriter, r *http.Request) {
-
 }

@@ -2,15 +2,16 @@ package main
 
 import (
 	//Import standard library
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
 
 	//Import standard package
-	"sentry/delete"
+	"sentry/dataModel"
 	"sentry/get"
 	"sentry/post"
-	"sentry/put"
+	"sentry/utility"
 )
 
 /*
@@ -56,23 +57,27 @@ var transactions []Transaction = make([]Transaction, 0)
 	}
 */
 
+func prepareData() {
+	utility.CreateNewFile("data/users.json")
+
+	err := json.Unmarshal(utility.OpenFile("data/users.json"), &dataModel.Users)
+	if err != nil {
+		utility.LogError(err, "Error loading data from database", true)
+	}
+}
+
 func main() {
+	//Prepare data for using
+	prepareData()
+
 	//Create multiplexer for routing
 	mux := http.NewServeMux()
 
 	//handle GET method here
-	mux.HandleFunc("/get-profile", get.HandleGetProfile)
-	mux.HandleFunc("/get-transactions", get.HandleGetTransactions)
-	mux.HandleFunc("/get-report", get.HandleGetReport)
+	mux.HandleFunc("/get-username", get.HandleGetUsername)
 
-	//handle POST method
-	mux.HandleFunc("/transactions", post.HandlePostTransactions)
-
-	//handle PUT method
-	mux.HandleFunc("/put", put.Test)
-
-	//handle DELETE method
-	mux.HandleFunc("/delete-transactions", delete.HandleDeleteTransactions)
+	//handle POST request
+	mux.HandleFunc("/user", post.HandlePostUser)
 
 	//Run server at port 8080
 	fmt.Println("Sentry running at http://localhost:8080")
@@ -82,5 +87,4 @@ func main() {
 		http.Error(w, "Server error", http.StatusInternalServerError)
 		log.Fatal(err)
 	}
-
 }
