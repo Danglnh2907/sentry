@@ -1,27 +1,40 @@
 package main
 
 import (
+	//Import standard library
+	"fmt"
 	"os"
 	"strings"
-)
 
-var State bool = false
+	//Import user's defined package
+	"sentry/auth"
+	"sentry/help"
+)
 
 func main() {
 	if len(os.Args) == 1 {
-		Help()
+		help.Help()
 		return
 	}
 
 	if len(os.Args) != 1 {
 		if strings.ToLower(os.Args[1]) == "crac" {
-			CreateAccount()
+			auth.CreateAccount()
 			return
 		}
 
 		if strings.ToLower(os.Args[1]) == "login" {
-			Login()
+			auth.Login()
 			return
+		}
+
+		if strings.ToLower(os.Args[1]) == "logout" {
+			fmt.Println("|_ Log out successfully!")
+			return
+		}
+
+		if strings.ToLower(os.Args[1]) == "add" {
+			fmt.Println("Adding func")
 		}
 	}
 }
