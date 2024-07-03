@@ -154,7 +154,7 @@ func CreateAccount() {
 	defer resp.Body.Close()
 }
 
-func Login() bool {
+func Login() (bool, string) {
 	reader := bufio.NewReader(os.Stdin)
 
 	//Get username
@@ -162,7 +162,7 @@ func Login() bool {
 	username, err := reader.ReadString('\n')
 	if err != nil {
 		utility.LogError(err, "Error reading input from user")
-		return false
+		return false, ""
 	}
 	username = strings.TrimSpace(username)
 
@@ -171,7 +171,7 @@ func Login() bool {
 	password, err := reader.ReadString('\n')
 	if err != nil {
 		utility.LogError(err, "Error reading input from user")
-		return false
+		return false, ""
 	}
 	password = strings.TrimSpace(password)
 
@@ -188,16 +188,16 @@ func Login() bool {
 	resp, err := http.Post("http://localhost:8080/login", "application/json", bytes.NewBuffer(jsonData))
 	if err != nil {
 		utility.LogError(err, "Error sending data to server")
-		return false
+		return false, ""
 	}
 	defer resp.Body.Close()
 
 	message, err := io.ReadAll(resp.Body)
 	if err != nil {
 		utility.LogError(err, "Error reading message from respond body")
-		return false
+		return false, ""
 	}
 
-	fmt.Printf("%s. Status code: %d\n", message, resp.StatusCode)
-	return resp.StatusCode == 200
+	fmt.Printf("%s\n", message)
+	return resp.StatusCode == 200, username
 }

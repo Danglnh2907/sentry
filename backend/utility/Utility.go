@@ -44,11 +44,12 @@ func CreateNewDir(dirName string) {
 func CreateNewFile(filePath string) {
 	//If file does not exist, create new one
 	if _, err := os.Stat(filePath); err != nil {
-		_, err = os.Create(filePath)
+		file, err := os.Create(filePath)
 		//Handle error
 		if err != nil {
 			LogError(err, fmt.Sprintf("Error create %s file\n", filePath), false)
 		}
+		defer file.Close()
 	}
 }
 

@@ -15,7 +15,6 @@ type User struct {
 	Fullname     string   `json:"fullname"`
 	Budget       float64  `json:"budget"`
 	Transactions []string `json:"transactions"`
-	IsLogIn      bool     `json:"isLogin"`
 }
 
 func HandleCreateAccount(w http.ResponseWriter, r *http.Request) {
@@ -40,7 +39,6 @@ func HandleCreateAccount(w http.ResponseWriter, r *http.Request) {
 		utility.LogError(err, "Error parsing json data", false)
 		return
 	}
-	newUser.IsLogIn = true
 
 	//Check if user's username already exist in database or not
 	for _, name := range usernames {
@@ -115,7 +113,6 @@ func HandleLogin(w http.ResponseWriter, r *http.Request) {
 
 			//Check if password is correct or not
 			if user.Password == info[1]["password"] {
-				user.IsLogIn = true
 				w.WriteHeader(http.StatusOK)
 				_, err = w.Write([]byte("Login successfully!"))
 				if err != nil {
