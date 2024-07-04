@@ -17,12 +17,11 @@ import (
 )
 
 type User struct {
-	Username       string   `json:"username"`
-	Password       string   `json:"password"`
-	Fullname       string   `json:"fullname"`
-	Budget         float64  `json:"budget"`
-	PreferCurrency string   `json:"prefer-currency" default:"USD"`
-	Transactions   []string `json:"transaction"`
+	Username     string   `json:"username"`
+	Password     string   `json:"password"`
+	Fullname     string   `json:"fullname"`
+	Budget       float64  `json:"budget"`
+	Transactions []string `json:"transactions"`
 }
 
 func CreateAccount() {
@@ -129,10 +128,9 @@ func CreateAccount() {
 
 	//Send data back to server
 	newUser := User{
-		Username: username,
-		Password: password,
-		Fullname: fullname,
-		Budget:   budget, PreferCurrency: "USD",
+		Username:     username,
+		Password:     password,
+		Fullname:     fullname,
 		Transactions: make([]string, 0)}
 
 	jsonData, err := json.MarshalIndent(newUser, "", " ")
@@ -200,4 +198,52 @@ func Login() (bool, string) {
 
 	fmt.Printf("%s\n", message)
 	return resp.StatusCode == 200, username
+}
+
+func ShowProfile(username string) {
+	//Sending request to server
+	req, err := http.NewRequest("GET", "http://localhost:8080/get-profile", nil)
+	if err != nil {
+		utility.LogError(err, "Error making request")
+		return
+	}
+	req.Header.Set("Accept", "appliction/json")
+	req.Header.Set("Identity", username)
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		utility.LogError(err, "Error sending request to server")
+	}
+	defer resp.Body.Close()
+
+	//Reading respond body and parsing data
+	data, err := io.ReadAll(resp.Body)
+	if err != nil {
+		utility.LogError(err, "Error reading respond body")
+		return
+	}
+
+	var user User
+	err = json.Unmarshal(data, &user)
+	if err != nil {
+		utility.LogError(err, "Error parsing json data")
+		return
+	}
+
+	//Display information
+	result := fmt.Sprintf("Username: %s\nPassword: %s\nFullname: %s\nBudget: %.2f\n",
+		user.Username,
+		user.Password,
+		user.Fullname,
+		user.Budget)
+	if len(user.Transactions) == 0 {
+		result += "Transactions: You currently have no transactions\n"
+	} else {
+		for _, val := range user.Transactions {
+			result += fmt.Sprintf("%s ", val)
+		}
+		result += "\n"
+	}
+	fmt.Print(result)
 }

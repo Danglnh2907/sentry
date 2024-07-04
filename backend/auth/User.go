@@ -141,5 +141,34 @@ func HandleLogin(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetProfile(w http.ResponseWriter, r *http.Request) {
+	//Reading request body
+	identity := r.Header.Get("identity")
 
+	//Get the list of usernames and check for he identity of the requester
+	var usernames []string
+	err := json.Unmarshal(utility.OpenFile("data/usernames.json"), &usernames)
+	if err != nil {
+		utility.LogError(err, "Error getting usernames", false)
+		return
+	}
+
+	var isValid bool = false
+	for _, name := range usernames {
+		if name == string(identity) {
+			isValid = true
+		}
+	}
+
+	if !isValid {
+		w.WriteHeader(http.StatusNotAcceptable)
+		_, err = w.Write([]byte("Cannot verify the identity"))
+		if err != nil {
+			utility.LogError(err, "Error sending message to client", false)
+		}
+		return
+	}
+
+	//If identity is valid, get the data and send back to client
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(utility.OpenFile(fmt.Sprintf("data/%s/user.json", identity)))
 }

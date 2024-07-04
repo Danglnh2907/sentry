@@ -17,6 +17,7 @@ import (
 func main() {
 	//Create new .env file to store the login state of current device
 	utility.CreateNewFile(".env")
+
 	//Load env var from .env file
 	err := godotenv.Load(".env")
 	if err != nil {
@@ -42,8 +43,18 @@ func main() {
 		}
 
 		if strings.ToLower(os.Args[1]) == "logout" {
-			//utility.SetEnvVar("false", "")
+			utility.SetEnvVar("false", "")
 			fmt.Println("Log out successfully!")
+		}
+
+		if strings.ToLower(os.Args[1]) == "show-profile" {
+			if os.Getenv("state") == "false" {
+				fmt.Println("You must log in to use this function")
+				return
+			}
+
+			auth.ShowProfile(os.Getenv("user"))
+
 		}
 
 		if strings.ToLower(os.Args[1]) == "add" {
