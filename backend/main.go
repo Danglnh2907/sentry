@@ -8,6 +8,7 @@ import (
 
 	//Import standard package
 	"sentry/auth"
+	"sentry/crud"
 )
 
 func main() {
@@ -19,9 +20,13 @@ func main() {
 	mux.HandleFunc("/login", auth.HandleLogin)
 	mux.HandleFunc("/get-profile", auth.GetProfile)
 
+	//Handle crud
+	mux.HandleFunc("/transaction", crud.HandlePostTransaction)
+
 	//Run server at port 8080
 	fmt.Println("Sentry running at http://localhost:8080")
 	err := http.ListenAndServe("localhost:8080", mux)
+
 	if err != nil {
 		var w http.ResponseWriter
 		http.Error(w, "Server error", http.StatusInternalServerError)

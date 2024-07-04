@@ -1,1 +1,18 @@
-[]
+[
+ {
+  "id": "",
+  "name": "Test1",
+  "description": "none",
+  "category": "others",
+  "date": "04/07/2024",
+  "cost": 120000
+ },
+ {
+  "id": "",
+  "name": "Test2",
+  "description": "none",
+  "category": "others",
+  "date": "11/11/2024",
+  "cost": 134000
+ }
+]

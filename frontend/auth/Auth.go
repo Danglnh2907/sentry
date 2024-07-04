@@ -207,7 +207,7 @@ func ShowProfile(username string) {
 		utility.LogError(err, "Error making request")
 		return
 	}
-	req.Header.Set("Accept", "appliction/json")
+	req.Header.Set("Content-Type", "appliction/json")
 	req.Header.Set("Identity", username)
 
 	client := &http.Client{}
@@ -234,7 +234,7 @@ func ShowProfile(username string) {
 	//Display information
 	result := fmt.Sprintf("Username: %s\nPassword: %s\nFullname: %s\nBudget: %.2f\n",
 		user.Username,
-		user.Password,
+		strings.Repeat("*", len(user.Password)),
 		user.Fullname,
 		user.Budget)
 	if len(user.Transactions) == 0 {
