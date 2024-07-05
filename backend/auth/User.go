@@ -66,6 +66,8 @@ func HandleCreateAccount(w http.ResponseWriter, r *http.Request) {
 		utility.LogError(err, "Error parsing data to json", false)
 	}
 	utility.WriteFile(fmt.Sprintf("data/%s/user.json", newUser.Username), jsonData)
+	//Add empty array to transactions.json to avoid error
+	utility.WriteFile(fmt.Sprintf("data/%s/transactions.json", newUser.Username), []byte("[]"))
 
 	//Send successful message to client
 	_, err = w.Write([]byte("Account created successfully!"))

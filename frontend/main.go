@@ -39,9 +39,13 @@ func main() {
 
 		//Login
 		if strings.ToLower(os.Args[1]) == "login" {
-			isLogin, username := auth.Login()
-			if isLogin {
-				utility.SetEnvVar("true", username)
+			if os.Getenv("state") == "true" {
+				fmt.Println("You have already logged in")
+			} else {
+				isLogin, username := auth.Login()
+				if isLogin {
+					utility.SetEnvVar("true", username)
+				}
 			}
 		}
 

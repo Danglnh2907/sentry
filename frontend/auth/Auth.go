@@ -83,7 +83,12 @@ func CreateAccount() {
 		//Check if password is valid
 		isValid = len(password) >= 11
 		if !isValid {
-			fmt.Println("Password length must be at least 11 characters")
+			fmt.Println("Password length must be at least 11 characters!")
+		}
+
+		isValid = strings.Contains(password, " ")
+		if !isValid {
+			fmt.Println("Password must not contain any space!")
 		}
 
 		regex, _ := regexp.Compile(".*[A-Z]+.*")
@@ -165,7 +170,7 @@ func Login() (bool, string) {
 	username = strings.TrimSpace(username)
 
 	//Get password
-	fmt.Print("Enter your username: ")
+	fmt.Print("Enter your password: ")
 	password, err := reader.ReadString('\n')
 	if err != nil {
 		utility.LogError(err, "Error reading input from user")

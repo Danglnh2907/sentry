@@ -1,16 +1,22 @@
 package crud
 
 import (
+	//Import standard library
 	"bufio"
 	"bytes"
+	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"io"
+	"math/rand"
 	"net/http"
 	"os"
-	"sentry/utility"
 	"strings"
 	"time"
+
+	//Import user's defined package
+	"sentry/utility"
 )
 
 type Transaction struct {
@@ -125,6 +131,9 @@ func AddTrans(username string) {
 		transaction.Cost = cost
 	}
 
+	//Generate transaction's ID
+	transaction.ID = generateID(transaction, username)
+
 	//Make a http request to server
 	jsonData, err := json.MarshalIndent(transaction, "", " ")
 	if err != nil {
@@ -160,4 +169,24 @@ func AddTrans(username string) {
 
 func AddTransByFile(filePath string) {
 
+}
+
+func generateID(transaction Transaction, username string) string {
+	//Get current time in nanosecond
+	timemstamp := time.Now().UnixNano()
+
+	//Get random integer
+	random := rand.Int63()
+
+	//Get all transaction's information
+	info := fmt.Sprintf("%s%f", transaction.Name, transaction.Cost)
+
+	//Combine all data
+	data := fmt.Sprintf("%s%d%d%s", info, random, timemstamp, username)
+
+	//Hash data to get ID
+	hash := sha256.Sum256([]byte(data))
+
+	//Return the hash to hexa string
+	return hex.EncodeToString(hash[:])
 }

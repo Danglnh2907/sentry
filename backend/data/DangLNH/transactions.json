@@ -1,18 +1,10 @@
 [
  {
-  "id": "",
-  "name": "Test1",
+  "id": "047d41f287acf7d21bab81e86d731fc3ade39f4b967e2a93792cdc3b4f7ba448",
+  "name": "Test",
   "description": "none",
   "category": "others",
-  "date": "04/07/2024",
-  "cost": 120000
- },
- {
-  "id": "",
-  "name": "Test2",
-  "description": "none",
-  "category": "others",
-  "date": "11/11/2024",
+  "date": "05/07/2024",
   "cost": 134000
  }
 ]
