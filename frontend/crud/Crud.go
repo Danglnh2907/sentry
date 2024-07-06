@@ -5,6 +5,7 @@ import (
 	"bufio"
 	"bytes"
 	"crypto/sha256"
+	"encoding/csv"
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
@@ -12,6 +13,7 @@ import (
 	"math/rand"
 	"net/http"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 
@@ -167,8 +169,91 @@ func AddTrans(username string) {
 	fmt.Println(string(message))
 }
 
-func AddTransByFile(filePath string) {
+func AddTransByFile(filePath, username string) {
+	//Check if file exist
+	_, err := os.Stat(filePath)
+	if err != nil {
+		utility.LogError(err, "File does not exist")
+		return
+	}
 
+	//If file exist, add ID for each transaction
+	csvFile, err := os.Open(filePath)
+	if err != nil {
+		utility.LogError(err, "Error open csv file")
+		return
+	}
+	csvReader := csv.NewReader(csvFile)
+
+	records, err := csvReader.ReadAll()
+	if err != nil {
+		utility.LogError(err, "Error reading data from csv file")
+		return
+	}
+
+	newRecords := make([][]string, len(records))
+	for index, record := range records {
+		tempRecord := record
+		if index == 0 {
+			record = make([]string, 0)
+			record = append(record, "ID")
+			record = append(record, tempRecord...)
+		} else {
+			cost, err := strconv.ParseFloat(record[4], 64)
+			if err != nil {
+				utility.LogError(err, "Error parsing number from csv file")
+				return
+			}
+			transaction := Transaction{Name: record[0], Description: record[1], Category: record[2], Date: record[3], Cost: cost}
+			record = make([]string, 0)
+			record = append(record, generateID(transaction, username))
+			record = append(record, tempRecord...)
+		}
+		newRecords[index] = record
+	}
+
+	//Write newRecords to []byte using buffer
+	buffer := new(bytes.Buffer)
+	writer := csv.NewWriter(buffer)
+	err = writer.WriteAll(newRecords)
+	if err != nil {
+		utility.LogError(err, "Error writing data to buffer")
+		return
+	}
+	writer.Flush()
+	if err = writer.Error(); err != nil {
+		utility.LogError(err, "Error writing data after flush")
+		return
+	}
+	csvData := buffer.Bytes()
+
+	//Send data to server
+	url := "http://localhost:8080/transactions"
+	req, err := http.NewRequest("POST", url, bytes.NewBuffer(csvData))
+	if err != nil {
+		utility.LogError(err, "Error making new request")
+		return
+	}
+
+	req.Header.Set("Identity", username)
+	req.Header.Set("Content-Type", "text/csv")
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		utility.LogError(err, "Error sending request to server")
+		return
+	}
+	defer resp.Body.Close()
+
+	//Print message to user
+	message, err := io.ReadAll(resp.Body)
+	if err != nil {
+		utility.LogError(err, "Error reading respond body")
+		return
+	}
+
+	fmt.Println(string(message))
 }
 
 func generateID(transaction Transaction, username string) string {

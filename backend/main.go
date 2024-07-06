@@ -16,12 +16,13 @@ func main() {
 	mux := http.NewServeMux()
 
 	//Handle auth
-	mux.HandleFunc("/create-account", auth.HandleCreateAccount)
-	mux.HandleFunc("/login", auth.HandleLogin)
+	mux.HandleFunc("/create-account", auth.CreateAccount)
+	mux.HandleFunc("/login", auth.Login)
 	mux.HandleFunc("/get-profile", auth.GetProfile)
 
 	//Handle crud
-	mux.HandleFunc("/transaction", crud.HandlePostTransaction)
+	mux.HandleFunc("/transaction", crud.PostTransaction)
+	mux.HandleFunc("/transactions", crud.PostTransactions)
 
 	//Run server at port 8080
 	fmt.Println("Sentry running at http://localhost:8080")

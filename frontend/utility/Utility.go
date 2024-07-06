@@ -28,6 +28,16 @@ func CreateNewFile(filePath string) {
 	}
 }
 
+func OpenFile(filePath string) []byte {
+	data, err := os.ReadFile(filePath)
+	if err != nil {
+		LogError(err, "Error reading data from file")
+		return nil
+	}
+
+	return data
+}
+
 func SetEnvVar(state string, username string) {
 	os.Setenv("state", state)
 	os.Setenv("user", username)

@@ -68,7 +68,7 @@ func main() {
 		if strings.ToLower(os.Args[1]) == "add" {
 			if os.Getenv("state") == "true" {
 				if len(os.Args) == 3 {
-					crud.AddTransByFile(os.Args[2])
+					crud.AddTransByFile(os.Args[2], os.Getenv("user"))
 				} else {
 					crud.AddTrans(os.Getenv("user"))
 				}
