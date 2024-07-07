@@ -17,7 +17,7 @@ import (
 
 func main() {
 	//Create new .env file to store the login state of current device
-	utility.CreateNewFile(".env")
+	utility.CreateEnvFile(".env")
 
 	//Load env var from .env file
 	err := godotenv.Load(".env")
@@ -64,6 +64,15 @@ func main() {
 			auth.ShowProfile(os.Getenv("user"))
 		}
 
+		//delete profile
+		if strings.ToLower(os.Args[1]) == "delete-profile" {
+			if os.Getenv("state") == "false" {
+				fmt.Println("You must log in to use this function")
+				return
+			}
+			auth.DeleteAccount(os.Getenv("user"))
+		}
+
 		//Add transactions
 		if strings.ToLower(os.Args[1]) == "add" {
 			if os.Getenv("state") == "true" {
@@ -72,6 +81,15 @@ func main() {
 				} else {
 					crud.AddTrans(os.Getenv("user"))
 				}
+			} else {
+				fmt.Println("You must log in to use this function")
+			}
+		}
+
+		//Get transaction
+		if strings.ToLower(os.Args[1]) == "show-transactions" {
+			if os.Getenv("state") == "true" {
+				crud.GetTransactions(os.Getenv("user"))
 			} else {
 				fmt.Println("You must log in to use this function")
 			}

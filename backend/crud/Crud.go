@@ -1,6 +1,7 @@
 package crud
 
 import (
+	"bytes"
 	"encoding/csv"
 	"encoding/json"
 	"fmt"
@@ -164,6 +165,70 @@ func PostTransactions(w http.ResponseWriter, r *http.Request) {
 	_, err = w.Write([]byte("Transactions added to database successfully!"))
 	if err != nil {
 		utility.LogError(err, "Error at: PostTransactions -> Error sending message to client", false)
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+}
+
+func GetTransactions(w http.ResponseWriter, r *http.Request) {
+	identity := r.Header.Get("Identity")
+
+	//Read data from transactions.json
+	transactionPath := fmt.Sprintf("data/%s/transactions.json", identity)
+	data, err := utility.OpenFile(transactionPath)
+	if err != nil {
+		utility.LogError(err, "Error at: GetTransactions -> Error reading data from transactions.json", false)
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	//Unmarshal json data
+	var transactions []Transaction
+	err = json.Unmarshal(data, &transactions)
+	if err != nil {
+		utility.LogError(err, "Error at: GetTransactions -> Error unmarshal transactions.json", false)
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	//Generate csv data
+	records := make([][]string, 0)
+	//Set header
+	header := []string{"Name", "Descripiton", "Category", "Date", "Cost"}
+	records = append(records, header)
+	//Set each record
+	for _, transaction := range transactions {
+		//Set each record
+		cost := strconv.FormatFloat(transaction.Cost, 'f', 2, 64)
+		record := []string{transaction.Name, transaction.Description, transaction.Category, transaction.Date, cost}
+		records = append(records, record)
+
+	}
+
+	//Writing csv data before sending
+	buffer := new(bytes.Buffer)
+	csvWriter := csv.NewWriter(buffer)
+	err = csvWriter.WriteAll(records)
+	if err != nil {
+		utility.LogError(err, "Error at: GetTransactions -> Error writing csvData to buffer", false)
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+	csvWriter.Flush()
+	if err := csvWriter.Error(); err != nil {
+		utility.LogError(err, "Error at: GetTransactions -> Error writing csv data after flush", false)
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	csvData := buffer.Bytes()
+
+	//Sending data to client
+	w.WriteHeader(http.StatusCreated)
+	w.Header().Set("Content-Type", "text/csv")
+	_, err = w.Write(csvData)
+	if err != nil {
+		utility.LogError(err, "Error at: GetTransactions -> Error sending data to client", false)
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
 		return
 	}

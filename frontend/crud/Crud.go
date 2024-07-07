@@ -47,7 +47,7 @@ func AddTrans(username string) {
 		fmt.Print("Enter transaction's name: ")
 		name, err = reader.ReadString('\n')
 		if err != nil {
-			utility.LogError(err, "Error reading user input")
+			utility.LogError(err, "Error at: AddTrans -> Error reading transaction's name")
 			return
 		}
 		name = strings.TrimSpace(name)
@@ -65,7 +65,7 @@ func AddTrans(username string) {
 	fmt.Print("Enter transaction's description (optional): ")
 	description, err = reader.ReadString('\n')
 	if err != nil {
-		utility.LogError(err, "Error reading user input")
+		utility.LogError(err, "Error at: AddTrans -> Error reading transaction's description")
 		return
 	}
 	description = strings.TrimSpace(description)
@@ -80,7 +80,7 @@ func AddTrans(username string) {
 	fmt.Print("Enter transaction's category (optional): ")
 	category, err = reader.ReadString('\n')
 	if err != nil {
-		utility.LogError(err, "Error reading user input")
+		utility.LogError(err, "Error at: AddTrans -> Error reading transaction's category")
 		return
 	}
 	category = strings.TrimSpace(category)
@@ -97,7 +97,7 @@ func AddTrans(username string) {
 		fmt.Print("Enter date of transaction (dd/mm/yyyy): ")
 		date, err = reader.ReadString('\n')
 		if err != nil {
-			utility.LogError(err, "Error reading user input")
+			utility.LogError(err, "Error at: AddTrans -> Error reading transaction's date")
 			return
 		}
 
@@ -120,7 +120,7 @@ func AddTrans(username string) {
 		fmt.Print("Enter the cost of transaction: ")
 		_, err = fmt.Scanf("%f", &cost)
 		if err != nil {
-			utility.LogError(err, "Error reading user input")
+			utility.LogError(err, "Error at: AddTrans -> Error reading transaction's cost")
 			return
 		}
 
@@ -139,13 +139,13 @@ func AddTrans(username string) {
 	//Make a http request to server
 	jsonData, err := json.MarshalIndent(transaction, "", " ")
 	if err != nil {
-		utility.LogError(err, "Error parsing data to json")
+		utility.LogError(err, "Error at: AddTrans -> Error marshal transaction")
 		return
 	}
 
 	req, err := http.NewRequest("POST", "http://localhost:8080/transaction", bytes.NewBuffer(jsonData))
 	if err != nil {
-		utility.LogError(err, "Error making request")
+		utility.LogError(err, "Error at: AddTrans -> Error making new request")
 		return
 	}
 
@@ -155,14 +155,14 @@ func AddTrans(username string) {
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		utility.LogError(err, "Error sending request to server")
+		utility.LogError(err, "Error at: AddTrans -> Error sending request to server")
 		return
 	}
 	defer resp.Body.Close()
 
 	message, err := io.ReadAll(resp.Body)
 	if err != nil {
-		utility.LogError(err, "Error reading respond body")
+		utility.LogError(err, "Error at: AddTrans -> Error reading respond body")
 		return
 	}
 
@@ -173,21 +173,21 @@ func AddTransByFile(filePath, username string) {
 	//Check if file exist
 	_, err := os.Stat(filePath)
 	if err != nil {
-		utility.LogError(err, "File does not exist")
+		utility.LogError(err, "Error at: AddTransByFile -> File does not exist")
 		return
 	}
 
 	//If file exist, add ID for each transaction
 	csvFile, err := os.Open(filePath)
 	if err != nil {
-		utility.LogError(err, "Error open csv file")
+		utility.LogError(err, "Error at: AddTransByFile -> Error open csv file")
 		return
 	}
 	csvReader := csv.NewReader(csvFile)
 
 	records, err := csvReader.ReadAll()
 	if err != nil {
-		utility.LogError(err, "Error reading data from csv file")
+		utility.LogError(err, "Error at: AddTransByFile -> Error reading data from csv file")
 		return
 	}
 
@@ -201,7 +201,7 @@ func AddTransByFile(filePath, username string) {
 		} else {
 			cost, err := strconv.ParseFloat(record[4], 64)
 			if err != nil {
-				utility.LogError(err, "Error parsing number from csv file")
+				utility.LogError(err, "Error at: AddTransByFile -> Error parsing number from csv file")
 				return
 			}
 			transaction := Transaction{Name: record[0], Description: record[1], Category: record[2], Date: record[3], Cost: cost}
@@ -217,12 +217,12 @@ func AddTransByFile(filePath, username string) {
 	writer := csv.NewWriter(buffer)
 	err = writer.WriteAll(newRecords)
 	if err != nil {
-		utility.LogError(err, "Error writing data to buffer")
+		utility.LogError(err, "Error at: AddTransByFile -> Error writing csv data to buffer")
 		return
 	}
 	writer.Flush()
 	if err = writer.Error(); err != nil {
-		utility.LogError(err, "Error writing data after flush")
+		utility.LogError(err, "Error at: AddTransByFile -> Error writing csv data after flush")
 		return
 	}
 	csvData := buffer.Bytes()
@@ -231,7 +231,7 @@ func AddTransByFile(filePath, username string) {
 	url := "http://localhost:8080/transactions"
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(csvData))
 	if err != nil {
-		utility.LogError(err, "Error making new request")
+		utility.LogError(err, "Error at: AddTransByFileError making new request")
 		return
 	}
 
@@ -241,7 +241,7 @@ func AddTransByFile(filePath, username string) {
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		utility.LogError(err, "Error sending request to server")
+		utility.LogError(err, "Error at: AddTransByFile -> Error sending request to server")
 		return
 	}
 	defer resp.Body.Close()
@@ -249,7 +249,7 @@ func AddTransByFile(filePath, username string) {
 	//Print message to user
 	message, err := io.ReadAll(resp.Body)
 	if err != nil {
-		utility.LogError(err, "Error reading respond body")
+		utility.LogError(err, "Error at: AddTransByFile -> Error reading respond body")
 		return
 	}
 
@@ -274,4 +274,43 @@ func generateID(transaction Transaction, username string) string {
 
 	//Return the hash to hexa string
 	return hex.EncodeToString(hash[:])
+}
+
+func GetTransactions(username string) {
+	//Make request to server
+	url := "http://localhost:8080/get-transactions"
+	req, err := http.NewRequest("POST", url, nil)
+	if err != nil {
+		utility.LogError(err, "Error at: GetTransactions -> Error making new request")
+		return
+	}
+
+	req.Header.Set("Identity", username)
+	req.Header.Set("Content-Type", "text/csv")
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		utility.LogError(err, "Error at: GetTransactions -> Error sending request to server")
+		return
+	}
+	defer resp.Body.Close()
+
+	//Reading data from resp body
+	data, err := io.ReadAll(resp.Body)
+	if err != nil {
+		utility.LogError(err, "Error at: GetTransactions -> Error reading data from respond body")
+		return
+	}
+
+	//Writting data to csv file
+	csvPath := "./transactions.csv"
+	err = utility.WriteFile(csvPath, data)
+	if err != nil {
+		utility.LogError(err, "Error at: GetTransactions -> Error writing data to csv file")
+		return
+	}
+
+	//Send successful message to user
+	fmt.Printf("%s\n", fmt.Sprintf("Transactions data has been store at %s", csvPath))
 }

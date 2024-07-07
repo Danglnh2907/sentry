@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"os"
 	"sentry/utility"
 )
 
@@ -13,6 +14,7 @@ type User struct {
 	Username     string   `json:"username"`
 	Password     string   `json:"password"`
 	Fullname     string   `json:"fullname"`
+	Email        string   `json:"email"`
 	Budget       float64  `json:"budget"`
 	Transactions []string `json:"transactions"`
 }
@@ -266,4 +268,44 @@ func GetProfile(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
 		return
 	}
+}
+
+func DeleteProfile(w http.ResponseWriter, r *http.Request) {
+	//Get identity of requester
+	identity := r.Header.Get("Identity")
+
+	//Remove user from usernames.json
+	data, err := utility.OpenFile("data/usernames.json")
+	if err != nil {
+		utility.LogError(err, "Error at: DeleteProfile -> Error reading usernames.json", false)
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	var usernames []string
+	err = json.Unmarshal(data, &usernames)
+	if err != nil {
+		utility.LogError(err, "Error at: DeleteProfile -> Error unmarshal usernames.json", false)
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	for index, username := range usernames {
+		if username == identity {
+			usernames = append(usernames[:index], usernames[index+1:]...)
+			break
+		}
+	}
+
+	//Remove entire user's directory
+	err = os.RemoveAll(fmt.Sprintf("data/%s", identity))
+	if err != nil {
+		utility.LogError(err, "Error at: DeleteProfile -> Error delete user's directory", false)
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	//Write successful message
+	w.WriteHeader(http.StatusAccepted)
+	w.Write([]byte("Account deleted successfully"))
 }
